@@ -40,7 +40,7 @@ JSDOM.fromFile(path.join(ROOT, 'index.html'), {
 
     console.log('\n— Explainer —');
     const staticBlocks = d.querySelectorAll('[data-static-tokens]');
-    check('4 static token examples present', staticBlocks.length === 4,
+    check('static token example present', staticBlocks.length === 1,
       'found ' + staticBlocks.length);
     let allFilled = true;
     staticBlocks.forEach((b) => { if (b.querySelectorAll('.tok').length === 0) allFilled = false; });
@@ -51,7 +51,7 @@ JSDOM.fromFile(path.join(ROOT, 'index.html'), {
     check('5 choice buttons rendered', choices.length === 5, 'found ' + choices.length);
     check('first choice is selected', choices[0] &&
       choices[0].getAttribute('aria-selected') === 'true');
-    check('result panel has meters', d.querySelectorAll('.meter').length === 4);
+    check('result panel has 3 meters', d.querySelectorAll('.meter').length === 3);
     check('result panel has 2 text panels', d.querySelectorAll('.panel').length === 2);
     const inChips = d.querySelectorAll('.tokens--in .tok').length;
     check('prompt token chips rendered', inChips > 0, 'chips=' + inChips);
@@ -80,8 +80,8 @@ JSDOM.fromFile(path.join(ROOT, 'index.html'), {
       Array.from(segs).every((s) => /%$/.test(s.style.width)));
     check('data table has 5 body rows',
       d.querySelectorAll('#datatable tbody tr').length === 5);
-    check('data table has 6 headers',
-      d.querySelectorAll('#datatable thead th').length === 6);
+    check('data table has 4 headers',
+      d.querySelectorAll('#datatable thead th').length === 4);
 
     console.log('\n— Scale —');
     check('scale select has 5 options',
@@ -107,6 +107,35 @@ JSDOM.fromFile(path.join(ROOT, 'index.html'), {
     console.log('\n— Footnotes —');
     check('generated date filled in',
       /\d{4}/.test(d.getElementById('gen-date').textContent));
+
+    console.log('— Exhibition requirements —');
+    const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+    check('declared dark colour scheme',
+      /<meta name="color-scheme" content="dark">/.test(html));
+    check('no light-mode styling remains',
+      !/prefers-color-scheme:\s*light/.test(
+        fs.readFileSync(path.join(ROOT, 'assets/styles.css'), 'utf8')));
+    check('no non-Devon place names anywhere',
+      !/Sheffield|Rotherham|\bLeeds\b/.test(html + fs.readFileSync(path.join(ROOT, 'assets/data.js'), 'utf8')));
+    check('Exeter is referenced', /Exeter/.test(html));
+    // The explainer states a word and token count in prose; keep them true.
+    const ex1 = JSON.parse(staticBlocks[0].getAttribute('data-static-tokens'));
+    const sentence = ex1.join('');
+    const wordCount = sentence.replace(/[.]/g, '').trim().split(/\s+/).filter(Boolean).length;
+    const claim = d.querySelector('#what .oneline').textContent;
+    const NUMS = { six: 6, seven: 7, eight: 8, nine: 9, ten: 10 };
+    const claimedWords = NUMS[(claim.match(/(\w+) words/i) || [])[1]?.toLowerCase()];
+    const claimedTokens = NUMS[(claim.match(/(\w+) tokens/i) || [])[1]?.toLowerCase()];
+    check('explainer word count claim is true', claimedWords === wordCount,
+      'claims ' + claimedWords + ', actually ' + wordCount);
+    check('explainer token count claim is true', claimedTokens === ex1.length,
+      'claims ' + claimedTokens + ', actually ' + ex1.length);
+    // Prose the visitor reads as page furniture, excluding the collapsed
+    // footnotes and the demo content itself.
+    const prose = Array.from(d.querySelectorAll('.hero p, .section > .wrap > h2, .oneline'))
+      .map((n) => n.textContent.trim()).join(' ');
+    const words = prose.split(/\s+/).filter(Boolean).length;
+    check('standing prose under 120 words', words < 120, words + ' words');
 
     console.log('\n— Accessibility basics —');
     check('lang is en-GB', d.documentElement.getAttribute('lang') === 'en-GB');

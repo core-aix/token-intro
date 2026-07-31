@@ -1,5 +1,5 @@
 /* ==========================================================================
-   What is a token? — exhibition demo
+   What is a token? — exhibition display
    All data is pre-computed in assets/data.js. Nothing here talks to a server.
    ========================================================================== */
 
@@ -44,19 +44,17 @@
     container.textContent = '';
     var frag = document.createDocumentFragment();
     for (var i = 0; i < tokens.length; i++) {
-      var t = tokens[i];
-      var parts = t.split('\n');
+      var parts = tokens[i].split('\n');
       for (var j = 0; j < parts.length; j++) {
         if (j > 0) frag.appendChild(el('span', 'tok tok--nl'));
         if (parts[j] === '' && parts.length > 1) continue;
-        var chip = el('span', 'tok', parts[j] === '' ? ' ' : parts[j]);
-        frag.appendChild(chip);
+        frag.appendChild(el('span', 'tok', parts[j] === '' ? ' ' : parts[j]));
       }
     }
     container.appendChild(frag);
   }
 
-  /* ── 1. static token examples in the explainer ───────────────────────── */
+  /* ── 1. static token example in the explainer ────────────────────────── */
 
   document.querySelectorAll('[data-static-tokens]').forEach(function (node) {
     try {
@@ -68,7 +66,6 @@
 
   var chooser = document.querySelector('.chooser');
   var result = document.getElementById('result');
-  var current = 0;
 
   examples.forEach(function (ex, i) {
     var b = el('button', 'choice');
@@ -77,14 +74,12 @@
     b.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
     b.setAttribute('aria-controls', 'result');
     b.appendChild(el('span', 'choice-label', ex.label));
-    b.appendChild(el('span', 'choice-meta',
-      num(ex.inCount) + ' in · ' + num(ex.outCount) + ' out · ' + pence(ex.costTotal)));
+    b.appendChild(el('span', 'choice-meta', pence(ex.costTotal)));
     b.addEventListener('click', function () { select(i); });
     chooser.appendChild(b);
   });
 
   function select(i) {
-    current = i;
     var tabs = chooser.querySelectorAll('.choice');
     for (var k = 0; k < tabs.length; k++) {
       tabs[k].setAttribute('aria-selected', k === i ? 'true' : 'false');
@@ -93,29 +88,29 @@
     syncScalePicker(i);
   }
 
-  /* A panel showing one body of text, switchable between plain words and
-     the token chips it is made of. */
+  /* A panel showing one body of text, switchable between plain words and the
+     token chips it is made of. */
   function textPanel(opts) {
     var panel = el('div', 'panel');
 
     var head = el('div', 'panel-head');
     head.appendChild(el('span', 'panel-dot panel-dot--' + opts.kind));
     head.appendChild(el('h3', 'panel-title', opts.title));
-    head.appendChild(el('span', 'panel-count', num(opts.tokens.length) + ' tokens'));
+    head.appendChild(el('span', 'panel-count', num(opts.tokens.length)));
     panel.appendChild(head);
 
     var tabs = el('div', 'viewtabs');
-    var bWords = el('button', 'viewtab', 'Words');
     var bTokens = el('button', 'viewtab', 'Tokens');
+    var bWords = el('button', 'viewtab', 'Words');
     bWords.type = bTokens.type = 'button';
-    tabs.appendChild(bWords);
     tabs.appendChild(bTokens);
+    tabs.appendChild(bWords);
     panel.appendChild(tabs);
 
     var body = el('div', 'panel-body');
     var clip = el('div', 'clip');
     var plain = el('p', 'plaintext', opts.text);
-    var toks = el('p', 'tokens tokens--' + opts.kind);
+    var toks = el('p', 'tokens tokens--' + opts.kind + (opts.big ? ' tokens--big' : ''));
     renderTokens(toks, opts.tokens);
     clip.appendChild(plain);
     clip.appendChild(toks);
@@ -130,8 +125,8 @@
     body.appendChild(expand);
     panel.appendChild(body);
 
-    // Only offer the expander when there is genuinely something clipped. The
-    // two views have different heights, so re-check whenever the view changes.
+    // Only offer the expander when something is genuinely clipped. The two
+    // views have different heights, so re-check whenever the view changes.
     function syncExpand() {
       if (clip.classList.contains('open')) { expand.hidden = false; return; }
       expand.hidden = clip.scrollHeight <= clip.clientHeight + 4;
@@ -151,11 +146,10 @@
     return panel;
   }
 
-  function meter(kind, value, label, sub) {
+  function meter(kind, value, label) {
     var m = el('div', 'meter meter--' + kind);
     m.appendChild(el('span', 'meter-num', value));
     m.appendChild(el('span', 'meter-lbl', label));
-    if (sub) m.appendChild(el('span', 'meter-sub', sub));
     return m;
   }
 
@@ -164,36 +158,28 @@
 
     result.appendChild(el('p', 'blurb', ex.blurb));
 
-    // Individual input/output costs are far too small to print meaningfully, so
-    // show each side's share of the bill instead — which is the point anyway.
-    var shareIn = Math.round((ex.costIn / ex.costTotal) * 100);
-    var shareOut = 100 - shareIn;
-
     var meters = el('div', 'meters');
-    meters.appendChild(meter('in', num(ex.inCount), 'tokens you sent',
-      shareIn + '% of the cost'));
-    meters.appendChild(meter('out', num(ex.outCount), 'tokens Claude wrote',
-      shareOut + '% of the cost'));
-    meters.appendChild(meter('total', pence(ex.costTotal), 'total cost',
-      'in pence'));
-    meters.appendChild(meter('total', num(Math.round(1 / (ex.costTotal / USD_PER_GBP))),
-      'answers for £1', 'at this size'));
+    meters.appendChild(meter('in', num(ex.inCount), 'your tokens'));
+    meters.appendChild(meter('out', num(ex.outCount), 'AI tokens'));
+    meters.appendChild(meter('total', pence(ex.costTotal), 'cost'));
     result.appendChild(meters);
 
     result.appendChild(textPanel({
       kind: 'in',
-      title: 'What you asked',
+      title: 'You asked',
       text: ex.prompt,
       tokens: ex.inTokens,
-      startOnTokens: ex.inCount <= 60
+      startOnTokens: true,
+      big: ex.inCount <= 60
     }));
 
     result.appendChild(textPanel({
       kind: 'out',
-      title: 'What Claude Haiku 4.5 replied',
+      title: 'The AI replied',
       text: ex.answer,
       tokens: ex.outTokens,
-      startOnTokens: false
+      startOnTokens: false,
+      big: false
     }));
   }
 
@@ -201,7 +187,7 @@
 
   (function chart() {
     var legend = document.getElementById('legend');
-    [['in', 'Tokens you sent'], ['out', 'Tokens Claude wrote']].forEach(function (s) {
+    [['in', 'Your words'], ['out', 'The AI’s words']].forEach(function (s) {
       var item = el('div', 'legend-item');
       var sw = el('span', 'legend-swatch');
       sw.style.background = 'var(--series-' + s[0] + ')';
@@ -218,21 +204,15 @@
       row.appendChild(el('div', 'bar-label', ex.label));
 
       var track = el('div', 'bar-track');
-      var inPct = (ex.costIn / max) * 100;
-      var outPct = (ex.costOut / max) * 100;
-
-      if (inPct > 0) {
-        var si = el('div', 'bar-seg bar-seg--in');
-        si.style.width = inPct + '%';
-        track.appendChild(si);
-      }
+      var si = el('div', 'bar-seg bar-seg--in');
+      si.style.width = (ex.costIn / max) * 100 + '%';
+      track.appendChild(si);
       var so = el('div', 'bar-seg bar-seg--out');
-      so.style.width = outPct + '%';
+      so.style.width = (ex.costOut / max) * 100 + '%';
       track.appendChild(so);
       row.appendChild(track);
 
-      row.appendChild(el('div', 'bar-value',
-        pence(ex.costTotal) + '  ·  ' + num(ex.inCount) + ' in, ' + num(ex.outCount) + ' out'));
+      row.appendChild(el('div', 'bar-value', pence(ex.costTotal)));
       host.appendChild(row);
     });
 
@@ -240,7 +220,7 @@
     var table = document.getElementById('datatable');
     var thead = el('thead');
     var hr = el('tr');
-    ['Question', 'Tokens in', 'Tokens out', 'Cost in', 'Cost out', 'Total'].forEach(function (h) {
+    ['Question', 'Your tokens', 'AI tokens', 'Cost'].forEach(function (h) {
       hr.appendChild(el('th', null, h));
     });
     thead.appendChild(hr);
@@ -252,8 +232,6 @@
       tr.appendChild(el('td', null, ex.label));
       tr.appendChild(el('td', null, num(ex.inCount)));
       tr.appendChild(el('td', null, num(ex.outCount)));
-      tr.appendChild(el('td', null, pence(ex.costIn)));
-      tr.appendChild(el('td', null, pence(ex.costOut)));
       tr.appendChild(el('td', null, pence(ex.costTotal)));
       tbody.appendChild(tr);
     });
@@ -266,17 +244,12 @@
   var scaleGrid = document.getElementById('scalegrid');
 
   examples.forEach(function (ex, i) {
-    var o = el('option', null, '“' + ex.label + '” (' + pence(ex.costTotal) + ' each)');
+    var o = el('option', null, ex.label);
     o.value = String(i);
     scaleSelect.appendChild(o);
   });
 
-  var SCALES = [
-    [1, 'once'],
-    [100, 'a hundred times'],
-    [10000, 'ten thousand times'],
-    [1000000, 'a million times']
-  ];
+  var SCALES = [[1, 'once'], [100, '100 times'], [10000, '10,000 times'], [1000000, 'a million times']];
 
   function renderScale(i) {
     var ex = examples[i];
@@ -284,7 +257,7 @@
     SCALES.forEach(function (s) {
       var li = el('li', 'scaleitem');
       li.appendChild(el('span', 'scaleitem-num', money(ex.costTotal * s[0])));
-      li.appendChild(el('span', 'scaleitem-lbl', 'asked ' + s[1]));
+      li.appendChild(el('span', 'scaleitem-lbl', s[1]));
       scaleGrid.appendChild(li);
     });
   }
@@ -312,11 +285,7 @@
     function update() {
       if (!tokeniser) return;
       var text = input.value;
-      if (!text) {
-        output.textContent = '';
-        countNum.textContent = '0';
-        return;
-      }
+      if (!text) { output.textContent = ''; countNum.textContent = '0'; return; }
       var ids = tokeniser.encode(text);
       renderTokens(output, ids.map(function (id) { return tokeniser.decode([id]); }));
       countNum.textContent = num(ids.length);
@@ -330,17 +299,14 @@
       s.onload = function () {
         tokeniser = window.GPTTokenizer_cl100k_base;
         if (!tokeniser) { s.onerror(); return; }
-        status.textContent = 'Ready — type away.';
+        status.textContent = '';
         countBox.hidden = false;
-        if (!input.value) {
-          input.value = 'Tokenisation is surprisingly unpredictable!';
-        }
+        if (!input.value) input.value = 'Tokenisation is unpredictable!';
         update();
         input.focus();
       };
       s.onerror = function () {
-        status.textContent =
-          'Sorry, the tokeniser could not be loaded. The examples above still work.';
+        status.textContent = 'Sorry — that could not be loaded. The examples above still work.';
         loadBtn.remove();
       };
       document.head.appendChild(s);
@@ -357,10 +323,8 @@
 
   var gen = document.getElementById('gen-date');
   if (gen && DATA.generated) {
-    var d = new Date(DATA.generated + 'T00:00:00Z');
-    gen.textContent = d.toLocaleDateString('en-GB', {
-      month: 'long', year: 'numeric', timeZone: 'UTC'
-    });
+    gen.textContent = new Date(DATA.generated + 'T00:00:00Z')
+      .toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
   }
 
   /* ── go ──────────────────────────────────────────────────────────────── */
