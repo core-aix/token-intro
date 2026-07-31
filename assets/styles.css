@@ -161,6 +161,10 @@ a { color: var(--accent); text-underline-offset: 4px; }
 }
 .tokens--big { font-size: clamp(1.05rem, 4vw, 1.7rem); gap: 7px; }
 
+/* One flat colour per group. Every chip in a group looks identical on purpose:
+   the colour says who wrote the text and nothing else. An earlier version
+   cycled three shades so neighbours stayed distinct, but that reads as though
+   the shade encodes something. The gap and the border do that job instead. */
 .tok {
   display: inline-block;
   padding: .25em .4em;
@@ -168,16 +172,18 @@ a { color: var(--accent); text-underline-offset: 4px; }
   white-space: pre-wrap;
   color: #fff;
 }
-/* Alternating tints so neighbouring chips stay distinct. The shade carries no
-   meaning of its own — the group colour does. */
-.tokens--in  .tok:nth-child(3n+1) { background: #1d4a80; }
-.tokens--in  .tok:nth-child(3n+2) { background: #2a6bb5; }
-.tokens--in  .tok:nth-child(3n+3) { background: #163a63; }
-.tokens--out .tok:nth-child(3n+1) { background: #8a3818; }
-.tokens--out .tok:nth-child(3n+2) { background: #b8471f; }
-.tokens--out .tok:nth-child(3n+3) { background: #6b2b12; }
+.tokens--in  .tok { background: #2a6bb5; border: 1px solid #4d8fd6; }
+.tokens--out .tok { background: #b8471f; border: 1px solid #db6a3d; }
 
-.tok--nl { width: 100%; height: 0; padding: 0; background: none !important; }
+/* Markers for the two things that are otherwise invisible but still counted:
+   a leading space and a line break. Dimmed so they read as annotation rather
+   than as part of the word — but only to 0.7, which keeps them above 3:1
+   against the chip. At 0.45 they were 2.3:1 and effectively unreadable. */
+.tok-mark { opacity: .7; font-weight: 400; }
+
+/* A flex spacer that starts a new row. Deliberately not a .tok — one chip per
+   token is what makes the chips countable. */
+.rowbreak { flex-basis: 100%; height: 0; }
 
 /* ── Chooser ──────────────────────────────────────────────────────────── */
 
@@ -423,9 +429,11 @@ tbody td { font-variant-numeric: tabular-nums; color: var(--text-secondary); }
 .foot-list { margin: .8rem 0 0; padding-left: 1.2rem; color: var(--text-muted); font-size: .95rem; }
 .foot-list li { margin-bottom: .6rem; max-width: 60ch; }
 .foot-tail {
+  display: flex; flex-wrap: wrap; gap: .6rem 1.2rem; align-items: center;
   font-size: .95rem; color: var(--text-muted);
   border-top: 1px solid var(--border); padding-top: 1.2rem; margin-top: 1.6rem;
 }
+.foot-lab { margin-left: auto; font-weight: 650; white-space: nowrap; }
 
 @media (forced-colors: active) {
   .bar-seg, .panel-dot, .legend-swatch, .tok { forced-color-adjust: none; }

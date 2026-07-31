@@ -64,6 +64,26 @@ JSDOM.fromFile(path.join(ROOT, 'index.html'), {
     const outChips = d.querySelectorAll('.tokens--out .tok').length;
     check('answer token chips rendered', outChips > 0, 'chips=' + outChips);
 
+    // One chip per token, always — otherwise counting the chips on screen
+    // disagrees with the number in the header. Newline tokens used to vanish.
+    let chipMismatch = [];
+    data.examples.forEach((e, i) => {
+      choices[i].dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+      const a = d.querySelectorAll('.panels .tokens--in .tok').length;
+      const b = d.querySelectorAll('.panels .tokens--out .tok').length;
+      if (a !== e.inCount) chipMismatch.push(e.id + ' in ' + a + '!=' + e.inCount);
+      if (b !== e.outCount) chipMismatch.push(e.id + ' out ' + b + '!=' + e.outCount);
+    });
+    choices[0].dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+    check('chips on screen equal the token count, every example',
+      chipMismatch.length === 0, chipMismatch.join('; '));
+
+    // Newline tokens must still be visible, not silently dropped.
+    const nlExample = data.examples.findIndex((e) =>
+      e.outTokens.some((t) => /^\n+$/.test(t)));
+    check('newline tokens are shown, not dropped', nlExample >= 0 &&
+      d.querySelectorAll('.panels .tokens--out .tok-mark').length > 0);
+
     console.log('\n— Switching examples —');
     choices[4].dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
     check('clicking a choice selects it',
@@ -127,6 +147,14 @@ JSDOM.fromFile(path.join(ROOT, 'index.html'), {
       !!d.querySelector('.agicard .btn-primary'));
     check('footer does NOT link aGiTrack',
       !d.querySelector('.footer a[href*="agitrack"]'));
+    // The lab's own site, distinct from the aGiTrack subdomain above.
+    const lab = d.querySelector('.footer a[href="https://core-aix.org"]');
+    check('footer links CORE-AIx Lab', !!lab,
+      'no https://core-aix.org link in the footer');
+    check('CORE-AIx link opens safely',
+      lab && (lab.getAttribute('rel') || '').includes('noopener'));
+    check('CORE-AIx link is named, not a bare URL',
+      lab && /CORE-AIx/i.test(lab.textContent));
 
     console.log('\n— Footnotes —');
     check('generated date filled in',
@@ -173,6 +201,13 @@ JSDOM.fromFile(path.join(ROOT, 'index.html'), {
       .map((n) => n.textContent.trim()).join(' ');
     const words = prose.split(/\s+/).filter(Boolean).length;
     check('standing prose under 120 words', words < 120, words + ' words');
+
+    // The chip colour must mean exactly one thing: who wrote the text.
+    check('token chips use one flat colour per group',
+      /\.tokens--in\s+\.tok \{ background: #[0-9a-f]{6}/.test(css) &&
+      !/\.tok:nth-child/.test(css),
+      'shade cycling still present');
+    check('invisible characters are marked', /\.tok-mark/.test(css));
 
     check('no fade-out gradient on clipped text',
       !/\.clip::after/.test(css) && !/linear-gradient\(transparent/.test(css));
@@ -270,6 +305,18 @@ JSDOM.fromFile(path.join(ROOT, 'index.html'), {
     check('SVG and PNG generator geometry agree',
       svgChips.length > 0 && svgChips.join(' | ') === pyChips.join(' | '),
       'svg=[' + svgChips.join('] [') + '] py=[' + pyChips.join('] [') + ']');
+
+    console.log('\n— Documentation split —');
+    const readme = fs.readFileSync(path.join(ROOT, 'README.md'), 'utf8');
+    check('AGENTS.md exists', fs.existsSync(path.join(ROOT, 'AGENTS.md')));
+    check('README points at AGENTS.md', /AGENTS\.md/.test(readme));
+    // README is for visitors and adapters; implementation rationale lives in
+    // AGENTS.md. These are the tells that internal notes have leaked back in.
+    const internal = ['jsdom', 'IntersectionObserver', 'scrollRestoration',
+                      'An earlier version', 'clamp(', 'nth-child', 'verify.js checks'];
+    const leaked = internal.filter((t) => readme.includes(t));
+    check('README stays outward-facing', leaked.length === 0,
+      'internal detail in README: ' + leaked.join(', '));
 
     console.log('\n— Referenced files exist —');
     ['assets/styles.css', 'assets/app.js', 'assets/data.js', 'assets/tokeniser.js',

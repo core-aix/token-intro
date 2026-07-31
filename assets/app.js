@@ -38,19 +38,44 @@
 
   function num(n) { return n.toLocaleString('en-GB'); }
 
-  /* Render an array of token strings as chips. Newlines become row breaks so
-     the shape of the original text stays readable. */
+  /* Render an array of token strings as chips — exactly one chip per token, so
+     counting the chips always gives the number in the header.
+
+     Two things are made visible rather than left invisible, because both
+     surprise people and both change the count:
+       · a leading space, which belongs to the token (" the" is one token,
+         "the" at the very start of a text is a different one)
+       ↵ a line break, which is a token in its own right */
   function renderTokens(container, tokens) {
     container.textContent = '';
     var frag = document.createDocumentFragment();
+
     for (var i = 0; i < tokens.length; i++) {
-      var parts = tokens[i].split('\n');
-      for (var j = 0; j < parts.length; j++) {
-        if (j > 0) frag.appendChild(el('span', 'tok tok--nl'));
-        if (parts[j] === '' && parts.length > 1) continue;
-        frag.appendChild(el('span', 'tok', parts[j] === '' ? ' ' : parts[j]));
+      var raw = tokens[i];
+      var chip = el('span', 'tok');
+      var text = raw;
+
+      if (text.charAt(0) === ' ') {
+        chip.appendChild(el('span', 'tok-mark', '·'));
+        text = text.slice(1);
       }
+
+      if (text.indexOf('\n') !== -1) {
+        var segs = text.split('\n');
+        for (var j = 0; j < segs.length; j++) {
+          if (j > 0) chip.appendChild(el('span', 'tok-mark', '↵'));
+          if (segs[j]) chip.appendChild(document.createTextNode(segs[j]));
+        }
+      } else if (text) {
+        chip.appendChild(document.createTextNode(text));
+      }
+
+      frag.appendChild(chip);
+      // Start a fresh row after a token that ends a line, so the shape of the
+      // original text survives. This is a spacer, not a chip.
+      if (raw.charAt(raw.length - 1) === '\n') frag.appendChild(el('span', 'rowbreak'));
     }
+
     container.appendChild(frag);
   }
 
