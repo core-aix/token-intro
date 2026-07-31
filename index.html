@@ -32,8 +32,8 @@
     <div class="wrap">
       <h2>A token is a chunk of a word</h2>
       <p class="tokens tokens--in tokens--big"
-         data-static-tokens='["Ex","eter"," Central"," Library"," is"," open"," today","."]'></p>
-      <p class="oneline">Six words. Eight tokens. <strong>Exeter</strong> alone takes two.</p>
+         data-static-tokens='["Ex","eter"," Library"," is"," open"," today","."]'></p>
+      <p class="oneline">Five words. Seven tokens. <strong>Exeter</strong> alone takes two.</p>
     </div>
   </section>
 
@@ -81,9 +81,7 @@
       <div class="trybox">
         <label class="visually-hidden" for="tryinput">Type some text to see its tokens</label>
         <textarea id="tryinput" rows="2" placeholder="Type here…" autocomplete="off" spellcheck="false"></textarea>
-        <div class="trystatus" id="trystatus">
-          <button class="btn-load" id="tryload" type="button">Start</button>
-        </div>
+        <div class="trystatus" id="trystatus" aria-live="polite"></div>
         <p class="tokens tokens--in tokens--big" id="tryoutput"></p>
         <div class="trycount" id="trycount" hidden>
           <span class="trycount-num" id="trycount-num">0</span>

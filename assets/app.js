@@ -282,11 +282,16 @@
   (function tryYourOwn() {
     var input = document.getElementById('tryinput');
     var status = document.getElementById('trystatus');
-    var loadBtn = document.getElementById('tryload');
     var output = document.getElementById('tryoutput');
     var countBox = document.getElementById('trycount');
     var countNum = document.getElementById('trycount-num');
+    var section = document.getElementById('try');
+
+    var SEED = 'Tokenisation is unpredictable!';
     var tokeniser = null;
+    var loading = false;
+    var seeded = false;   // the box still holds our example text
+    var timer = null;
 
     function update() {
       if (!tokeniser) return;
@@ -297,29 +302,53 @@
       countNum.textContent = num(ids.length);
     }
 
-    loadBtn.addEventListener('click', function () {
-      loadBtn.disabled = true;
-      loadBtn.textContent = 'Loading…';
+    function load() {
+      if (tokeniser || loading) return;
+      loading = true;
+      status.textContent = 'Loading…';
       var s = document.createElement('script');
       s.src = 'assets/tokeniser.js';
       s.onload = function () {
         tokeniser = window.GPTTokenizer_cl100k_base;
         if (!tokeniser) { s.onerror(); return; }
+        loading = false;
         status.textContent = '';
         countBox.hidden = false;
-        if (!input.value) input.value = 'Tokenisation is unpredictable!';
+        // Show something straight away so the section demonstrates itself.
+        if (!input.value) { input.value = SEED; seeded = true; }
         update();
-        input.focus();
       };
       s.onerror = function () {
+        loading = false;
         status.textContent = 'Sorry — that could not be loaded. The examples above still work.';
-        loadBtn.remove();
       };
       document.head.appendChild(s);
+    }
+
+    // Start fetching as the section nears the viewport, so it is ready by the
+    // time anyone reaches it and there is nothing to press.
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        for (var i = 0; i < entries.length; i++) {
+          if (entries[i].isIntersecting) { io.disconnect(); load(); return; }
+        }
+      }, { rootMargin: '600px' });
+      io.observe(section);
+    } else {
+      load();
+    }
+
+    // If someone reaches the box before the observer fires, start then instead.
+    input.addEventListener('focus', function () {
+      load();
+      // Select the example so the first keystroke replaces it, rather than
+      // making the visitor delete it by hand.
+      if (seeded) { input.select(); seeded = false; }
     });
 
-    var timer = null;
     input.addEventListener('input', function () {
+      seeded = false;
+      load();
       clearTimeout(timer);
       timer = setTimeout(update, 90);
     });

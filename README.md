@@ -58,12 +58,14 @@ billed at five times the rate of questions.
 | `assets/styles.css` | All styling. Dark only, sized for distance viewing |
 | `assets/app.js` | Interaction logic. No dependencies |
 | `assets/data.js` | **Generated.** Prompts, real answers, token splits, costs |
-| `assets/tokeniser.js` | Vendored BPE tokeniser, lazy-loaded only for "try your own words" |
+| `assets/tokeniser.js` | Vendored BPE tokeniser, lazy-loaded for "try your own words" |
 | `build/` | Tooling used to produce `assets/data.js`. Not part of the site |
 
-The page itself is about 90 KB. The tokeniser is roughly 1 MB but is only fetched if
-someone taps **Start** in the "try your own words" section, so the main demo loads
-instantly on library Wi-Fi.
+The page itself is about 90 KB. The tokeniser is roughly 1 MB, but it is not part of
+the initial load: an `IntersectionObserver` starts fetching it only once the "try your
+own words" section comes within 600 px of the viewport. The main demo therefore loads
+instantly on library Wi-Fi, and by the time a visitor scrolls down the box is already
+live — there is nothing to press.
 
 ---
 
@@ -81,7 +83,7 @@ node build/verify.js                # 4. check the page still works
 ```
 
 `build/verify.js` loads `index.html` in a headless DOM, runs the real page scripts,
-and asserts 50 checks covering the chooser, result panels, chart, scale cards,
+and asserts 57 checks covering the chooser, result panels, chart, scale cards,
 aGiTrack links, accessibility basics, and the exhibition constraints (dark theme, no
 non-Devon place names, standing prose under 120 words, no fade-out gradients on text,
 the hero sentence fitting on one line, and that the word/token counts claimed in the
@@ -129,6 +131,9 @@ SCRATCH="$PWD" node build/verify.js   # SCRATCH points at the node_modules paren
   appears only when content is genuinely cut off.
 - The hero's opening sentence is sized against the viewport so it always sits on a
   single line.
+- "Try your own words" needs no button: the tokeniser loads as the section approaches,
+  the box is pre-filled with an example so it demonstrates itself from a distance, and
+  the example is selected on first focus so the first keystroke replaces it.
 - Respects `prefers-reduced-motion`; works under forced-colours mode.
 
 ---

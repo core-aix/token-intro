@@ -92,8 +92,8 @@ JSDOM.fromFile(path.join(ROOT, 'index.html'), {
       scaleText.includes('a million times'));
 
     console.log('\n— Try your own —');
-    check('load button present', !!d.getElementById('tryload'));
     check('textarea present', !!d.getElementById('tryinput'));
+    check('no Start button to press', !d.getElementById('tryload'));
 
     console.log('\n— aGiTrack —');
     const agiLinks = Array.from(d.querySelectorAll('a[href*="agitrack.core-aix.org"]'));
@@ -124,7 +124,8 @@ JSDOM.fromFile(path.join(ROOT, 'index.html'), {
     const sentence = ex1.join('');
     const wordCount = sentence.replace(/[.]/g, '').trim().split(/\s+/).filter(Boolean).length;
     const claim = d.querySelector('#what .oneline').textContent;
-    const NUMS = { six: 6, seven: 7, eight: 8, nine: 9, ten: 10 };
+    const NUMS = { two: 2, three: 3, four: 4, five: 5, six: 6,
+                   seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12 };
     const claimedWords = NUMS[(claim.match(/(\w+) words/i) || [])[1]?.toLowerCase()];
     const claimedTokens = NUMS[(claim.match(/(\w+) tokens/i) || [])[1]?.toLowerCase()];
     check('explainer word count claim is true', claimedWords === wordCount,
@@ -169,9 +170,59 @@ JSDOM.fromFile(path.join(ROOT, 'index.html'), {
     ['assets/styles.css', 'assets/app.js', 'assets/data.js', 'assets/tokeniser.js']
       .forEach((f) => check(f + ' exists', fs.existsSync(path.join(ROOT, f))));
 
+    return lazyLoadChecks();
+  })
+  .then(() => {
     console.log('\n────────────────────────────');
     console.log(`  ${passed} passed, ${failed} failed`);
     console.log('────────────────────────────\n');
     process.exit(failed === 0 ? 0 : 1);
   })
   .catch((e) => { console.error('verify crashed:', e); process.exit(1); });
+
+/* jsdom has no IntersectionObserver, so the main run above exercises the
+   fallback. Stub one in to test the path real visitors actually get: the
+   tokeniser must NOT be fetched on load, but must arrive by itself — with no
+   click — once the section comes near the viewport. */
+function lazyLoadChecks() {
+  console.log('\n— Tokeniser auto-loads (no button) —');
+  let observed = null, opts = null, inst = null;
+  return JSDOM.fromFile(path.join(ROOT, 'index.html'), {
+    runScripts: 'dangerously', resources: 'usable', pretendToBeVisual: true,
+    virtualConsole: new VirtualConsole(),
+    beforeParse(w) {
+      w.IntersectionObserver = function (cb, o) {
+        opts = o; inst = this;
+        this.observe = (el) => { observed = el; };
+        this.disconnect = () => { this._off = true; };
+        this._fire = () => cb([{ isIntersecting: true }]);
+      };
+    },
+  })
+    .then((dom) => new Promise((r) => setTimeout(() => r(dom), 1200)))
+    .then((dom) => {
+      check('watches the try-your-own section', observed && observed.id === 'try');
+      check('starts fetching before the section is on screen',
+        opts && /\d+px/.test(opts.rootMargin || ''), 'rootMargin=' + (opts && opts.rootMargin));
+      check('tokeniser NOT fetched on page load', !dom.window.GPTTokenizer_cl100k_base);
+      inst._fire();
+      return new Promise((r) => setTimeout(() => r(dom), 9000));
+    })
+    .then((dom) => {
+      const d = dom.window.document;
+      check('observer disconnects after firing', !!inst._off);
+      check('tokeniser loads with no interaction', !!dom.window.GPTTokenizer_cl100k_base);
+      check('tokens shown without typing',
+        d.querySelectorAll('#tryoutput .tok').length > 0);
+      // And typing updates them live.
+      const inp = d.getElementById('tryinput');
+      inp.value = 'Exeter';
+      inp.dispatchEvent(new dom.window.Event('input', { bubbles: true }));
+      return new Promise((r) => setTimeout(() => r(d), 400));
+    })
+    .then((d) => {
+      const chips = Array.from(d.querySelectorAll('#tryoutput .tok')).map((t) => t.textContent);
+      check('typing re-tokenises live', chips.join('') === 'Exeter' && chips.length === 2,
+        JSON.stringify(chips));
+    });
+}

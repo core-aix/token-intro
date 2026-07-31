@@ -359,15 +359,7 @@ tbody td { font-variant-numeric: tabular-nums; color: var(--text-secondary); }
   border-radius: var(--radius-s); border: 3px solid var(--border-strong);
   background: var(--page); color: var(--text-primary);
 }
-.trystatus { margin: 1rem 0; font-size: 1rem; color: var(--text-secondary); }
-.btn-load {
-  font: inherit; font-size: 1.15rem; font-weight: 700;
-  padding: .7rem 2rem; min-height: 60px;
-  border-radius: 999px; border: 3px solid var(--series-in);
-  background: none; color: var(--accent); cursor: pointer;
-}
-.btn-load[disabled] { opacity: .5; cursor: default; }
-
+.trystatus { margin: .8rem 0 0; font-size: 1rem; color: var(--text-muted); min-height: 1.5em; }
 .trycount { display: flex; align-items: baseline; gap: .5rem; margin-top: 1.2rem; }
 .trycount-num {
   font-size: clamp(2.2rem, 10vw, 3.5rem); font-weight: 800;
