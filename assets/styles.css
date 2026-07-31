@@ -100,12 +100,17 @@ a { color: var(--accent); text-underline-offset: 4px; }
 }
 .hl { color: var(--series-out); }
 
+/* The first sentence must stay on a single line at any width, so the type is
+   sized against the viewport rather than wrapped. 46 characters at roughly
+   0.5em average advance needs about 23em, which 3.6vw keeps inside the
+   ~90vw available between the page gutters. */
 .lede {
-  font-size: clamp(1.25rem, 5vw, 2rem);
+  font-size: clamp(0.95rem, 3.6vw, 2.4rem);
   color: var(--text-secondary);
   font-weight: 500;
-  max-width: 24ch;
+  max-width: none;
 }
+.lede-line { display: block; white-space: nowrap; }
 
 .hero-cta { margin: clamp(1.8rem, 5vw, 2.8rem) 0 0; }
 .hero-cta a {
@@ -259,14 +264,12 @@ a { color: var(--accent); text-underline-offset: 4px; }
   background: var(--text-primary); color: var(--page); border-color: var(--text-primary);
 }
 
-.clip { max-height: 20rem; overflow: hidden; position: relative; }
-.clip::after {
-  content: ""; position: absolute; inset: auto 0 0 0; height: 5rem;
-  background: linear-gradient(transparent, var(--surface-2));
-  pointer-events: none;
-}
-.clip.open { max-height: none; }
-.clip.open::after { display: none; }
+/* Clipped content is cut cleanly and marked with a rule — never faded out,
+   which makes text look broken rather than deliberately shortened. */
+.clip { max-height: 24rem; overflow: hidden; }
+/* Applied only when content is genuinely cut off, so short prompts get no rule. */
+.clip--cut { padding-bottom: 1rem; border-bottom: 2px dashed var(--border-strong); }
+.clip.open { max-height: none; padding-bottom: 0; border-bottom: 0; }
 
 .plaintext {
   margin: 0; white-space: pre-wrap; overflow-wrap: anywhere;

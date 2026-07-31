@@ -128,8 +128,14 @@
     // Only offer the expander when something is genuinely clipped. The two
     // views have different heights, so re-check whenever the view changes.
     function syncExpand() {
-      if (clip.classList.contains('open')) { expand.hidden = false; return; }
-      expand.hidden = clip.scrollHeight <= clip.clientHeight + 4;
+      if (clip.classList.contains('open')) {
+        expand.hidden = false;
+        clip.classList.remove('clip--cut');
+        return;
+      }
+      var clipped = clip.scrollHeight > clip.clientHeight + 4;
+      expand.hidden = !clipped;
+      clip.classList.toggle('clip--cut', clipped);
     }
 
     function setView(showTokens) {

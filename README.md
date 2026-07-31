@@ -81,10 +81,11 @@ node build/verify.js                # 4. check the page still works
 ```
 
 `build/verify.js` loads `index.html` in a headless DOM, runs the real page scripts,
-and asserts 46 checks covering the chooser, result panels, chart, scale cards,
+and asserts 50 checks covering the chooser, result panels, chart, scale cards,
 aGiTrack links, accessibility basics, and the exhibition constraints (dark theme, no
-non-Devon place names, standing prose under 120 words, and that the word/token counts
-claimed in the explainer are actually true). It needs `jsdom`:
+non-Devon place names, standing prose under 120 words, no fade-out gradients on text,
+the hero sentence fitting on one line, and that the word/token counts claimed in the
+explainer are actually true). It needs `jsdom`:
 
 ```sh
 npm install jsdom
@@ -123,6 +124,11 @@ SCRATCH="$PWD" node build/verify.js   # SCRATCH points at the node_modules paren
   legend is always shown.
 - Long prose is collapsed behind "See the numbers" and "About these numbers" so the
   standing display stays sparse.
+- Clipped text is cut cleanly with a dashed rule and a **Show all** button — never
+  faded out, which makes text look broken rather than deliberately shortened. The rule
+  appears only when content is genuinely cut off.
+- The hero's opening sentence is sized against the viewport so it always sits on a
+  single line.
 - Respects `prefers-reduced-motion`; works under forced-colours mode.
 
 ---

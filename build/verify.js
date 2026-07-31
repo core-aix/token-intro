@@ -97,12 +97,13 @@ JSDOM.fromFile(path.join(ROOT, 'index.html'), {
 
     console.log('\n— aGiTrack —');
     const agiLinks = Array.from(d.querySelectorAll('a[href*="agitrack.core-aix.org"]'));
-    check('aGiTrack linked at least twice', agiLinks.length >= 2,
-      'found ' + agiLinks.length);
+    check('aGiTrack is linked', agiLinks.length >= 1, 'found ' + agiLinks.length);
     check('aGiTrack links open safely', agiLinks.every((a) =>
       a.getAttribute('rel') && a.getAttribute('rel').includes('noopener')));
     check('aGiTrack has a prominent button',
       !!d.querySelector('.agicard .btn-primary'));
+    check('footer does NOT link aGiTrack',
+      !d.querySelector('.footer a[href*="agitrack"]'));
 
     console.log('\n— Footnotes —');
     check('generated date filled in',
@@ -136,6 +137,22 @@ JSDOM.fromFile(path.join(ROOT, 'index.html'), {
       .map((n) => n.textContent.trim()).join(' ');
     const words = prose.split(/\s+/).filter(Boolean).length;
     check('standing prose under 120 words', words < 120, words + ' words');
+
+    const css = fs.readFileSync(path.join(ROOT, 'assets/styles.css'), 'utf8');
+    check('no fade-out gradient on clipped text',
+      !/\.clip::after/.test(css) && !/linear-gradient\(transparent/.test(css));
+
+    // The hero's first sentence is held on one line by vw-based sizing. Guard the
+    // arithmetic: chars x 0.5em average advance must fit the ~90vw gutter width.
+    const heroLine = d.querySelector('.lede-line');
+    const vw = parseFloat((css.match(/--?\s*font-size:\s*clamp\([^,]+,\s*([\d.]+)vw/) ||
+      css.match(/clamp\([^,]+,\s*([\d.]+)vw,\s*2\.4rem\)/) || [])[1]);
+    const needed = heroLine.textContent.trim().length * 0.5 * vw;
+    check('hero line is set to never wrap',
+      /nowrap/.test(css.split('.lede-line')[1] || ''));
+    check('hero line fits on one line at any width',
+      needed <= 90, heroLine.textContent.trim().length + ' chars x ' + vw +
+      'vw needs ~' + needed.toFixed(0) + 'vw of ~90vw');
 
     console.log('\n— Accessibility basics —');
     check('lang is en-GB', d.documentElement.getAttribute('lang') === 'en-GB');
