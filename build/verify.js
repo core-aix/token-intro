@@ -216,8 +216,35 @@ JSDOM.fromFile(path.join(ROOT, 'index.html'), {
       d.activeElement && d.activeElement.id === 'demo',
       'focus on ' + (d.activeElement && (d.activeElement.id || d.activeElement.tagName)));
 
+    console.log('\n— Icons —');
+    const iconLink = d.querySelector('link[rel="icon"]');
+    check('favicon is a real file, not an emoji data URI',
+      iconLink && /^assets\/favicon\.svg$/.test(iconLink.getAttribute('href') || ''),
+      'href=' + (iconLink && iconLink.getAttribute('href')));
+    check('no emoji left in any icon reference', !/rel="(icon|apple-touch-icon)"[^>]*[\u{1F000}-\u{1FAFF}]/u.test(html));
+    const touch = d.querySelector('link[rel="apple-touch-icon"]');
+    check('apple-touch-icon declared', !!touch);
+    check('apple-touch-icon file exists',
+      touch && fs.existsSync(path.join(ROOT, touch.getAttribute('href'))));
+
+    // The SVG and the PNG generator hold the same geometry in two places; make
+    // sure an edit to one without the other cannot slip through.
+    const svg = fs.readFileSync(path.join(ROOT, 'assets/favicon.svg'), 'utf8');
+    const svgChips = Array.from(
+      svg.matchAll(/<rect x="([\d.]+)" y="([\d.]+)" width="([\d.]+)" height="([\d.]+)"/g)
+    ).map((m) => m.slice(1, 5).map(Number).join(','));
+    const py = fs.readFileSync(path.join(ROOT, 'build/make-icons.py'), 'utf8');
+    const pyChips = Array.from(
+      py.matchAll(/\(\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d+),\s*(?:BLUE|ORANGE)\)/g)
+    ).map((m) => m.slice(1, 5).map(Number).join(','));
+    check('favicon.svg has 4 chips', svgChips.length === 4, 'found ' + svgChips.length);
+    check('SVG and PNG generator geometry agree',
+      svgChips.length > 0 && svgChips.join(' | ') === pyChips.join(' | '),
+      'svg=[' + svgChips.join('] [') + '] py=[' + pyChips.join('] [') + ']');
+
     console.log('\n— Referenced files exist —');
-    ['assets/styles.css', 'assets/app.js', 'assets/data.js', 'assets/tokeniser.js']
+    ['assets/styles.css', 'assets/app.js', 'assets/data.js', 'assets/tokeniser.js',
+     'assets/favicon.svg', 'assets/apple-touch-icon.png']
       .forEach((f) => check(f + ' exists', fs.existsSync(path.join(ROOT, f))));
 
     return lazyLoadChecks();

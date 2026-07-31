@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Text broken into tokens">
+  <title>What is a token?</title>
+  <rect width="64" height="64" rx="14" fill="#101014"/>
+  <!-- Four token chips of uneven width — the page's own motif in its two data
+       colours. Kept deliberately chunky so it still reads at 16px in a browser
+       tab. Pure shapes, so it renders identically everywhere: no font needed.
+       Geometry is mirrored in build/make-icons.py; change both together. -->
+  <g>
+    <rect x="10" y="14" width="25" height="17" rx="5" fill="#3987e5"/>
+    <rect x="39" y="14" width="15" height="17" rx="5" fill="#d95926"/>
+    <rect x="10" y="35" width="15" height="17" rx="5" fill="#d95926"/>
+    <rect x="29" y="35" width="25" height="17" rx="5" fill="#3987e5"/>
+  </g>
+</svg>

@@ -59,7 +59,9 @@ billed at five times the rate of questions.
 | `assets/app.js` | Interaction logic. No dependencies |
 | `assets/data.js` | **Generated.** Prompts, real answers, token splits, costs |
 | `assets/tokeniser.js` | Vendored BPE tokeniser, lazy-loaded for "try your own words" |
-| `build/` | Tooling used to produce `assets/data.js`. Not part of the site |
+| `assets/favicon.svg` | Browser-tab icon — four token chips, drawn as plain shapes |
+| `assets/apple-touch-icon.png` | **Generated.** 180x180 home-screen icon, same geometry |
+| `build/` | Tooling used to produce `assets/data.js` and the PNG icon. Not part of the site |
 
 The page itself is about 90 KB. The tokeniser is roughly 1 MB, but it is not part of
 the initial load: an `IntersectionObserver` starts fetching it only once the "try your
@@ -82,8 +84,24 @@ node build/build-data.js            # 3. tokenise and rebuild assets/data.js
 node build/verify.js                # 4. check the page still works
 ```
 
+## Icons
+
+`assets/favicon.svg` is the source of truth: four uneven token chips in the page's two
+data colours, drawn as plain shapes so it needs no emoji or web font and renders the
+same everywhere. It is deliberately chunky — six smaller chips looked better at 180 px
+but turned to mush at the 16 px browser-tab size.
+
+`assets/apple-touch-icon.png` is generated from the same geometry:
+
+```sh
+python3 build/make-icons.py     # needs Pillow
+```
+
+The geometry lives in two places (the SVG and the script), so `verify.js` parses both
+and fails if they disagree.
+
 `build/verify.js` loads `index.html` in a headless DOM, runs the real page scripts,
-and asserts 69 checks covering the chooser, result panels, chart, scale cards,
+and asserts 77 checks covering the chooser, result panels, chart, scale cards,
 aGiTrack links, accessibility basics, and the exhibition constraints (dark theme, no
 non-Devon place names, standing prose under 120 words, no fade-out gradients on text,
 every single-line sentence actually fitting on one line, and that the word/token counts
