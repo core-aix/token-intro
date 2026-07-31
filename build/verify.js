@@ -71,12 +71,29 @@ JSDOM.fromFile(path.join(ROOT, 'index.html'), {
     check('previous choice deselected',
       choices[0].getAttribute('aria-selected') === 'false');
     const answerPanel = d.querySelectorAll('.panel')[1];
+    const expected = data.examples[4].answer.slice(0, 60);
     check('answer panel shows the new reply',
-      answerPanel && answerPanel.textContent.includes('Riverbank'),
-      'panel text did not mention the cover-letter content');
+      answerPanel && answerPanel.textContent.includes(expected),
+      'panel does not contain the cover-letter answer');
     check('scale picker followed the selection',
       d.getElementById('scale-select').value === '4');
     choices[0].dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+
+    console.log('\n— One-screen layout —');
+    check('both messages share a .panels container',
+      d.querySelectorAll('.panels .panel').length === 2);
+    check('panel bodies are bounded scroll panes',
+      /\.panel-body\s*\{[^}]*max-height:[^}]*overflow-y:\s*auto/.test(
+        fs.readFileSync(path.join(ROOT, 'assets/styles.css'), 'utf8')));
+    check('panels sit side by side on a wide screen',
+      /@media \(min-width: 60rem\) \{ \.panels \{ grid-template-columns: 1fr 1fr/.test(
+        fs.readFileSync(path.join(ROOT, 'assets/styles.css'), 'utf8')));
+    check('no Show all button remains', !d.querySelector('.expand'));
+    check('scroll panes are keyboard reachable',
+      Array.from(d.querySelectorAll('.panel-body')).every((b) => b.tabIndex === 0));
+    check('scroll panes are labelled for screen readers',
+      Array.from(d.querySelectorAll('.panel-body')).every((b) =>
+        b.getAttribute('role') === 'region' && b.getAttribute('aria-label')));
 
     console.log('\n— Chart —');
     check('5 bar rows rendered', d.querySelectorAll('.bar-row').length === 5);
@@ -125,6 +142,18 @@ JSDOM.fromFile(path.join(ROOT, 'index.html'), {
     check('no non-Devon place names anywhere',
       !/Sheffield|Rotherham|\bLeeds\b/.test(html + fs.readFileSync(path.join(ROOT, 'assets/data.js'), 'utf8')));
     check('Exeter is referenced', /Exeter/.test(html));
+
+    // The examples must not read as any real or plausible named business.
+    const corpus = html + fs.readFileSync(path.join(ROOT, 'assets/data.js'), 'utf8');
+    const ENTITIES = [
+      'Northgate', 'Riverbank', 'National Lottery', 'University of Exeter',
+      'Okafor', 'Marlborough', 'Secure Saver',
+    ];
+    const found = ENTITIES.filter((n) => corpus.includes(n));
+    check('no invented or real organisation names', found.length === 0,
+      'found ' + found.join(', '));
+    const suffixes = corpus.match(/\b[A-Z][A-Za-z]+ (?:Limited|Ltd|PLC|plc)\b/g) || [];
+    check('no company-style names', suffixes.length === 0, suffixes.join(', '));
     // The explainer states a word and token count in prose; keep them true.
     const ex1 = JSON.parse(staticBlocks[0].getAttribute('data-static-tokens'));
     const sentence = ex1.join('');

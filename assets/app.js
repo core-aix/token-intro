@@ -107,43 +107,25 @@
     tabs.appendChild(bWords);
     panel.appendChild(tabs);
 
+    /* A bounded, scrollable pane rather than a clip-and-expand: both messages
+       then stay on screen together, whatever their length. */
     var body = el('div', 'panel-body');
-    var clip = el('div', 'clip');
+    body.tabIndex = 0;                       // keyboard-scrollable
+    body.setAttribute('role', 'region');
+    body.setAttribute('aria-label', opts.title);
     var plain = el('p', 'plaintext', opts.text);
     var toks = el('p', 'tokens tokens--' + opts.kind + (opts.big ? ' tokens--big' : ''));
     renderTokens(toks, opts.tokens);
-    clip.appendChild(plain);
-    clip.appendChild(toks);
-    body.appendChild(clip);
-
-    var expand = el('button', 'expand', 'Show all');
-    expand.type = 'button';
-    expand.addEventListener('click', function () {
-      var open = clip.classList.toggle('open');
-      expand.textContent = open ? 'Show less' : 'Show all';
-    });
-    body.appendChild(expand);
+    body.appendChild(plain);
+    body.appendChild(toks);
     panel.appendChild(body);
-
-    // Only offer the expander when something is genuinely clipped. The two
-    // views have different heights, so re-check whenever the view changes.
-    function syncExpand() {
-      if (clip.classList.contains('open')) {
-        expand.hidden = false;
-        clip.classList.remove('clip--cut');
-        return;
-      }
-      var clipped = clip.scrollHeight > clip.clientHeight + 4;
-      expand.hidden = !clipped;
-      clip.classList.toggle('clip--cut', clipped);
-    }
 
     function setView(showTokens) {
       plain.hidden = showTokens;
       toks.hidden = !showTokens;
       bWords.setAttribute('aria-pressed', String(!showTokens));
       bTokens.setAttribute('aria-pressed', String(showTokens));
-      requestAnimationFrame(syncExpand);
+      body.scrollTop = 0;
     }
     bWords.addEventListener('click', function () { setView(false); });
     bTokens.addEventListener('click', function () { setView(true); });
@@ -162,15 +144,19 @@
   function renderResult(ex) {
     result.textContent = '';
 
-    result.appendChild(el('p', 'blurb', ex.blurb));
-
+    // Headline and the three numbers share one row on wider screens, so the
+    // two messages below stay visible at the same time.
+    var summary = el('div', 'summary');
+    summary.appendChild(el('p', 'blurb', ex.blurb));
     var meters = el('div', 'meters');
     meters.appendChild(meter('in', num(ex.inCount), 'your tokens'));
     meters.appendChild(meter('out', num(ex.outCount), 'AI tokens'));
     meters.appendChild(meter('total', pence(ex.costTotal), 'cost'));
-    result.appendChild(meters);
+    summary.appendChild(meters);
+    result.appendChild(summary);
 
-    result.appendChild(textPanel({
+    var panels = el('div', 'panels');
+    panels.appendChild(textPanel({
       kind: 'in',
       title: 'You asked',
       text: ex.prompt,
@@ -178,15 +164,15 @@
       startOnTokens: true,
       big: ex.inCount <= 60
     }));
-
-    result.appendChild(textPanel({
+    panels.appendChild(textPanel({
       kind: 'out',
       title: 'The AI replied',
       text: ex.answer,
       tokens: ex.outTokens,
-      startOnTokens: false,
+      startOnTokens: true,
       big: false
     }));
+    result.appendChild(panels);
   }
 
   /* ── 3. comparison chart ─────────────────────────────────────────────── */

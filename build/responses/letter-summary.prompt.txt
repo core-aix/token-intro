@@ -2,18 +2,18 @@ Please summarise this letter from my energy supplier in plain English, and tell 
 
 ---
 
-Dear Ms Okafor,
+Dear Customer,
 
-Account number: 40-88-21-7734
-Supply address: Flat 2B, 14 Marlborough Terrace, Exeter, EX4 6PL
+Account number: 0000 0000 0000
+Supply address: 1 Example Street, Exeter
 
 IMPORTANT INFORMATION ABOUT CHANGES TO YOUR TARIFF AND ACCOUNT
 
-We are writing to inform you that your current fixed-rate tariff, Northgate Secure Saver 24, is scheduled to end on 30 September. In accordance with the terms and conditions of your supply agreement and our obligations under the relevant regulatory framework, we are required to give you advance notice of the changes that will take effect from that date.
+We are writing to inform you that your current fixed-rate tariff is scheduled to end on 30 September. In accordance with the terms and conditions of your supply agreement and our obligations under the relevant regulatory framework, we are required to give you advance notice of the changes that will take effect from that date.
 
-Following the conclusion of your fixed term, and in the absence of any alternative instruction from yourself, your supply will transfer automatically onto our Standard Variable Tariff. Under this arrangement, the unit rate applicable to your electricity supply will increase from 22.4p per kilowatt hour to 27.9p per kilowatt hour, and the daily standing charge will increase from 48.2p to 61.5p. For your gas supply, the unit rate will increase from 5.9p per kilowatt hour to 7.1p per kilowatt hour, with the daily standing charge rising from 29.1p to 32.4p. Based on your consumption over the preceding twelve-month period, we estimate that these revised rates would result in an increase to your annual expenditure of approximately £294.
+Following the conclusion of your fixed term, and in the absence of any alternative instruction from yourself, your supply will transfer automatically onto our standard variable tariff. Under this arrangement, the unit rate applicable to your electricity supply will increase from 22.4p per kilowatt hour to 27.9p per kilowatt hour, and the daily standing charge will increase from 48.2p to 61.5p. For your gas supply, the unit rate will increase from 5.9p per kilowatt hour to 7.1p per kilowatt hour, with the daily standing charge rising from 29.1p to 32.4p. Based on your consumption over the preceding twelve-month period, we estimate that these revised rates would result in an increase to your annual expenditure of approximately £294.
 
-We would like to draw your attention to the fact that alternative tariffs are available. Our Northgate Fixed 25 product offers a fixed unit rate of 24.1p per kilowatt hour for electricity and 6.2p per kilowatt hour for gas for a period of twelve months, with a daily standing charge of 52.0p and 30.2p respectively. Should you wish to move onto this tariff, you may do so without incurring an exit fee at any point prior to the conclusion of your existing fixed term. Please note that an early exit fee of £35 per fuel would ordinarily apply to the Northgate Fixed 25 product should you choose to leave it before the end of its term, although this fee is waived within the final forty-nine days of the term.
+We would like to draw your attention to the fact that alternative tariffs are available. Our twelve-month fixed tariff offers a fixed unit rate of 24.1p per kilowatt hour for electricity and 6.2p per kilowatt hour for gas, with a daily standing charge of 52.0p and 30.2p respectively. Should you wish to move onto this tariff, you may do so without incurring an exit fee at any point prior to the conclusion of your existing fixed term. Please note that an early exit fee of £35 per fuel would ordinarily apply to that tariff should you choose to leave it before the end of its term, although this fee is waived within the final forty-nine days of the term.
 
 In addition, our records indicate that we have not received an actual meter reading from your property since 11 March. The bills issued to you since that date have therefore been produced on an estimated basis. We would be grateful if you could provide an up-to-date reading, as this will ensure that your account is accurately reconciled prior to the tariff change taking effect. Readings can be submitted through your online account, via our automated telephone service, or by returning the enclosed card.
 
@@ -24,4 +24,3 @@ If we do not hear from you before 30 September, no action will be taken on your 
 Yours sincerely,
 
 Customer Accounts Team
-Northgate Energy Supply Limited

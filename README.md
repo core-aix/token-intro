@@ -41,12 +41,20 @@ Each was genuinely sent to **Claude Haiku 4.5**; the replies shown are unedited.
 | Boiling an egg | 14 | 246 | 0.098p |
 | A quick message | 28 | 204 | 0.083p |
 | A week of meals | 39 | 920 | 0.37p |
-| A long letter | 662 | 434 | 0.22p |
-| A cover letter | 682 | 498 | 0.25p |
+| A long letter | 618 | 394 | 0.20p |
+| A cover letter | 666 | 472 | 0.24p |
 
 They are ordered to make one point without needing a paragraph to explain it: the
 meal plan has nearly the *shortest* question yet costs the most, because answers are
 billed at five times the rate of questions.
+
+**No named organisations appear anywhere.** The two long examples deliberately contain
+no company, charity or institution names — the letter comes from "your energy supplier"
+and is signed by a "Customer Accounts Team", and the job advert is for "a community
+library service in Exeter". Earlier drafts invented plausible-sounding businesses and
+also referenced two genuinely real organisations; both are gone, and `verify.js` fails
+on a blocklist of those names plus anything matching a `… Limited` / `… Ltd` / `… plc`
+pattern.
 
 ---
 
@@ -101,7 +109,7 @@ The geometry lives in two places (the SVG and the script), so `verify.js` parses
 and fails if they disagree.
 
 `build/verify.js` loads `index.html` in a headless DOM, runs the real page scripts,
-and asserts 77 checks covering the chooser, result panels, chart, scale cards,
+and asserts 85 checks covering the chooser, result panels, chart, scale cards,
 aGiTrack links, accessibility basics, and the exhibition constraints (dark theme, no
 non-Devon place names, standing prose under 120 words, no fade-out gradients on text,
 every single-line sentence actually fitting on one line, and that the word/token counts
@@ -144,9 +152,13 @@ SCRATCH="$PWD" node build/verify.js   # SCRATCH points at the node_modules paren
   legend is always shown.
 - Long prose is collapsed behind "See the numbers" and "About these numbers" so the
   standing display stays sparse.
-- Clipped text is cut cleanly with a dashed rule and a **Show all** button — never
-  faded out, which makes text look broken rather than deliberately shortened. The rule
-  appears only when content is genuinely cut off.
+- **The demo fits one screen.** The question chips, the three numbers and both messages
+  are visible together: the chooser is a single compact row (48 px tall, wrapping on a
+  phone), the headline and numbers share a row above 46 rem, and the two messages sit
+  side by side above 60 rem. Each message is a bounded scroll pane
+  (`clamp(11rem, 34vh, 26rem)`) rather than a clip-and-expand, so a 900-token answer
+  cannot push the rest of the demo off screen — and nothing fades. The panes are
+  keyboard-scrollable and labelled as regions.
 - Short sentences never wrap early. Nothing is capped by a `max-width` in characters;
   instead each single-line sentence is sized against the viewport and capped so it also
   fits the `--maxw` container on a large display. `verify.js` checks the arithmetic
