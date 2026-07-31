@@ -83,11 +83,11 @@ node build/verify.js                # 4. check the page still works
 ```
 
 `build/verify.js` loads `index.html` in a headless DOM, runs the real page scripts,
-and asserts 57 checks covering the chooser, result panels, chart, scale cards,
+and asserts 62 checks covering the chooser, result panels, chart, scale cards,
 aGiTrack links, accessibility basics, and the exhibition constraints (dark theme, no
 non-Devon place names, standing prose under 120 words, no fade-out gradients on text,
-the hero sentence fitting on one line, and that the word/token counts claimed in the
-explainer are actually true). It needs `jsdom`:
+every single-line sentence actually fitting on one line, and that the word/token counts
+claimed in the explainer are actually true). It needs `jsdom`:
 
 ```sh
 npm install jsdom
@@ -129,8 +129,12 @@ SCRATCH="$PWD" node build/verify.js   # SCRATCH points at the node_modules paren
 - Clipped text is cut cleanly with a dashed rule and a **Show all** button — never
   faded out, which makes text look broken rather than deliberately shortened. The rule
   appears only when content is genuinely cut off.
-- The hero's opening sentence is sized against the viewport so it always sits on a
-  single line.
+- Short sentences never wrap early. Nothing is capped by a `max-width` in characters;
+  instead each single-line sentence is sized against the viewport and capped so it also
+  fits the `--maxw` container on a large display. `verify.js` checks the arithmetic
+  (characters x ~0.55em advance) against both limits and demands 10% headroom, so
+  lengthening a sentence or bumping a font size fails the build rather than silently
+  wrapping.
 - "Try your own words" needs no button: the tokeniser loads as the section approaches,
   the box is pre-filled with an example so it demonstrates itself from a distance, and
   the example is selected on first focus so the first keystroke replaces it.

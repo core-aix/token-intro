@@ -111,11 +111,11 @@ JSDOM.fromFile(path.join(ROOT, 'index.html'), {
 
     console.log('— Exhibition requirements —');
     const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+    const css = fs.readFileSync(path.join(ROOT, 'assets/styles.css'), 'utf8');
     check('declared dark colour scheme',
       /<meta name="color-scheme" content="dark">/.test(html));
     check('no light-mode styling remains',
-      !/prefers-color-scheme:\s*light/.test(
-        fs.readFileSync(path.join(ROOT, 'assets/styles.css'), 'utf8')));
+      !/prefers-color-scheme:\s*light/.test(css));
     check('no non-Devon place names anywhere',
       !/Sheffield|Rotherham|\bLeeds\b/.test(html + fs.readFileSync(path.join(ROOT, 'assets/data.js'), 'utf8')));
     check('Exeter is referenced', /Exeter/.test(html));
@@ -139,21 +139,46 @@ JSDOM.fromFile(path.join(ROOT, 'index.html'), {
     const words = prose.split(/\s+/).filter(Boolean).length;
     check('standing prose under 120 words', words < 120, words + ' words');
 
-    const css = fs.readFileSync(path.join(ROOT, 'assets/styles.css'), 'utf8');
     check('no fade-out gradient on clipped text',
       !/\.clip::after/.test(css) && !/linear-gradient\(transparent/.test(css));
 
-    // The hero's first sentence is held on one line by vw-based sizing. Guard the
-    // arithmetic: chars x 0.5em average advance must fit the ~90vw gutter width.
-    const heroLine = d.querySelector('.lede-line');
-    const vw = parseFloat((css.match(/--?\s*font-size:\s*clamp\([^,]+,\s*([\d.]+)vw/) ||
-      css.match(/clamp\([^,]+,\s*([\d.]+)vw,\s*2\.4rem\)/) || [])[1]);
-    const needed = heroLine.textContent.trim().length * 0.5 * vw;
-    check('hero line is set to never wrap',
-      /nowrap/.test(css.split('.lede-line')[1] || ''));
-    check('hero line fits on one line at any width',
-      needed <= 90, heroLine.textContent.trim().length + ' chars x ' + vw +
-      'vw needs ~' + needed.toFixed(0) + 'vw of ~90vw');
+    // Every line that must never wrap is sized against the viewport. Check the
+    // budget for real: characters x ~0.55em average advance has to fit BOTH the
+    // ~90vw available between the gutters on a phone AND the 64rem .wrap cap on
+    // a large display. This catches someone lengthening a sentence or bumping a
+    // font size without re-checking.
+    const AVG = 0.55;
+    const maxwRem = parseFloat((css.match(/--maxw:\s*([\d.]+)rem/) || [])[1]);
+    const WRAP_PX = maxwRem * 16 - 80;   // .wrap max-width minus its padding
+    const MARGIN = 0.9;                  // require 10% headroom, not a bare fit
+
+    function clampFor(rule) {
+      const re = new RegExp('\\' + rule +
+        '\\s*\\{[^}]*font-size:\\s*clamp\\(\\s*[\\d.]+rem\\s*,\\s*([\\d.]+)vw\\s*,\\s*([\\d.]+)rem');
+      const m = css.match(re);
+      return m ? { vw: parseFloat(m[1]), maxPx: parseFloat(m[2]) * 16 } : null;
+    }
+
+    check('no-wrap lines declare white-space: nowrap',
+      /\.lede-line[^}]*nowrap/.test(css) && /\.oneline\s*\{[^}]*nowrap/.test(css));
+    check('.oneline no longer capped by max-width',
+      !/\.oneline\s*\{[^}]*max-width:\s*\d+ch/.test(css));
+
+    [['.lede', '.lede-line'],
+     ['.oneline', '#what .oneline, #compare .oneline'],
+     ['.oneline--muted', '#try .oneline--muted']].forEach(function (pair) {
+      const cl = clampFor(pair[0]);
+      if (!cl) { check('clamp readable for ' + pair[0], false); return; }
+      d.querySelectorAll(pair[1]).forEach(function (node) {
+        const chars = node.textContent.replace(/\s+/g, ' ').trim().length;
+        const vwNeed = chars * AVG * cl.vw;
+        const pxNeed = chars * AVG * cl.maxPx;
+        check('fits one line: "' + node.textContent.replace(/\s+/g, ' ').trim().slice(0, 34) + '…"',
+          vwNeed <= 90 * MARGIN && pxNeed <= WRAP_PX * MARGIN,
+          chars + ' chars needs ' + vwNeed.toFixed(0) + 'vw of 90vw and ' +
+          pxNeed.toFixed(0) + 'px of ' + WRAP_PX + 'px');
+      });
+    });
 
     console.log('\n— Accessibility basics —');
     check('lang is en-GB', d.documentElement.getAttribute('lang') === 'en-GB');

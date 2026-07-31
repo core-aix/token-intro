@@ -25,7 +25,7 @@
 
   --radius:   18px;
   --radius-s: 10px;
-  --maxw:     64rem;
+  --maxw:     68rem;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -100,12 +100,10 @@ a { color: var(--accent); text-underline-offset: 4px; }
 }
 .hl { color: var(--series-out); }
 
-/* The first sentence must stay on a single line at any width, so the type is
-   sized against the viewport rather than wrapped. 46 characters at roughly
-   0.5em average advance needs about 23em, which 3.6vw keeps inside the
-   ~90vw available between the page gutters. */
+/* Both sentences stay on a single line at any width — see the budget note on
+   .oneline below. */
 .lede {
-  font-size: clamp(0.95rem, 3.6vw, 2.4rem);
+  font-size: clamp(0.95rem, 3.0vw, 2.1rem);
   color: var(--text-secondary);
   font-weight: 500;
   max-width: none;
@@ -132,13 +130,18 @@ a { color: var(--accent); text-underline-offset: 4px; }
 }
 .section--demo, .section--scale { background: var(--surface-1); }
 
+/* Single-line text. Sized against the viewport so it never wraps before the
+   edge of the screen, and capped so it still fits inside the --maxw .wrap on
+   large displays. Budget: characters x ~0.55em advance must fit both ~90vw
+   and (--maxw - gutters), with 10% headroom. build/verify.js checks this. */
 .oneline {
-  font-size: clamp(1.05rem, 3.6vw, 1.4rem);
+  font-size: clamp(0.9rem, 2.8vw, 1.95rem);
+  white-space: nowrap;
+  max-width: none;
   color: var(--text-secondary);
   margin: 1.2rem 0 0;
-  max-width: 34ch;
 }
-.oneline--muted { color: var(--text-muted); font-size: 1rem; }
+.oneline--muted { color: var(--text-muted); font-size: clamp(0.8rem, 2.6vw, 1.4rem); }
 
 /* ── Token chips ──────────────────────────────────────────────────────── */
 
