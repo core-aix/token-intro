@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>What is a token? — an introduction to how AI reads, writes and charges</title>
+<meta name="description" content="An interactive demonstration of tokens in large language models. Tap a real question, see how it is broken into tokens, and find out what the answer actually costs.">
+<meta name="color-scheme" content="light dark">
+<link rel="stylesheet" href="assets/styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔤</text></svg>">
+</head>
+<body>
+
+<a class="skip-link" href="#demo">Skip to the demonstration</a>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">A hands-on demonstration</p>
+    <h1>What is a <span class="hl">token</span>?</h1>
+    <p class="lede">
+      When you type a question into an AI assistant, your words are chopped into small
+      pieces called <strong>tokens</strong>. The AI reads tokens, writes tokens, and is
+      billed by the token.
+    </p>
+    <p class="lede">
+      Tap one of the real questions below to see how many tokens it takes — and what
+      the answer actually costs.
+    </p>
+    <p class="hero-cta"><a href="#demo">Try it now ↓</a></p>
+  </div>
+</header>
+
+<main>
+
+  <!-- ─────────────────────────── 1. What is a token ─────────────────────────── -->
+  <section class="section" id="what">
+    <div class="wrap">
+      <h2>First, a token is not a word</h2>
+      <p>
+        A token is a chunk of text. Common short words are usually one token each.
+        Longer or more unusual words get split into several pieces. Even the space
+        before a word travels with it.
+      </p>
+
+      <div class="tokdemo">
+        <p class="tokdemo-label">A short sentence becomes eight tokens:</p>
+        <p class="tokens tokens--in" data-static-tokens='["She","ffield"," Central"," Library"," is"," open"," today","."]'></p>
+        <p class="tokdemo-note">
+          Notice that <em>Sheffield</em> at the start of the sentence is split into
+          <span class="inline-tok">She</span> and <span class="inline-tok">ffield</span>,
+          while <em>Library</em> next to it survives as one piece. Odder still: put a
+          space in front and <span class="inline-tok">&nbsp;Sheffield</span> becomes a
+          single token again. Nobody designed these rules — they were learnt from
+          patterns in an enormous amount of text.
+        </p>
+      </div>
+
+      <div class="tokgrid">
+        <div class="tokgrid-item">
+          <p class="tokens tokens--in" data-static-tokens='["cat"," sat"," mat"]'></p>
+          <p class="tokgrid-cap"><strong>3 tokens.</strong> Everyday words are cheap.</p>
+        </div>
+        <div class="tokgrid-item">
+          <p class="tokens tokens--in" data-static-tokens='["un","question","ably"]'></p>
+          <p class="tokgrid-cap"><strong>3 tokens</strong> for one long word.</p>
+        </div>
+        <div class="tokgrid-item">
+          <p class="tokens tokens--in" data-static-tokens='["ant","idis","establish","ment","arian","ism"]'></p>
+          <p class="tokgrid-cap"><strong>6 tokens</strong> for a real mouthful.</p>
+        </div>
+      </div>
+
+      <p class="rule-of-thumb">
+        <span aria-hidden="true">📏</span>
+        <span>As a rough rule of thumb: <strong>1 token ≈ 4 characters ≈ ¾ of an English word</strong>.
+        A page of writing is roughly 500 tokens.</span>
+      </p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 2. The demo ─────────────────────────── -->
+  <section class="section section--demo" id="demo">
+    <div class="wrap">
+      <h2>Pick a real question</h2>
+      <p class="section-intro">
+        Each of these was genuinely sent to an AI model called
+        <strong>Claude Haiku&nbsp;4.5</strong>. The answers below are exactly what came back.
+      </p>
+
+      <div class="chooser" role="tablist" aria-label="Choose an example question"></div>
+
+      <div class="result" id="result" aria-live="polite">
+        <!-- filled by app.js -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 3. Comparison ─────────────────────────── -->
+  <section class="section" id="compare">
+    <div class="wrap">
+      <h2>Side by side</h2>
+      <p class="section-intro">
+        The cost of every example, split into what you wrote and what the AI wrote back.
+        Longer questions cost more — but <strong>long answers cost far more</strong>,
+        because writing is charged at five times the rate of reading.
+      </p>
+      <figure class="chart-figure viz-root">
+        <figcaption class="chart-title">Cost per question, in pence</figcaption>
+        <div class="legend" id="legend"></div>
+        <div class="chart" id="chart"></div>
+        <details class="table-toggle">
+          <summary>View as a table</summary>
+          <div class="table-scroll">
+            <table id="datatable"></table>
+          </div>
+        </details>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 4. Scale ─────────────────────────── -->
+  <section class="section section--scale" id="scale">
+    <div class="wrap">
+      <h2>So… is that expensive?</h2>
+      <p class="section-intro">
+        On its own, no. Every answer on this page cost less than half a penny. The
+        interesting part is what happens when you multiply.
+      </p>
+
+      <div class="scalepick">
+        <label for="scale-select">Show me the cost of</label>
+        <select id="scale-select"></select>
+      </div>
+
+      <ul class="scalegrid" id="scalegrid"></ul>
+
+      <p class="scale-note">
+        This is why the businesses building these tools watch token counts so closely.
+        One question is nothing. A million questions a day is a budget.
+      </p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 5. Try your own ─────────────────────────── -->
+  <section class="section" id="try">
+    <div class="wrap">
+      <h2>Now try your own words</h2>
+      <p class="section-intro">
+        Type anything — your name, your address, a favourite line of poetry — and watch
+        it break apart. Nothing you type leaves your device.
+      </p>
+
+      <div class="trybox">
+        <label class="visually-hidden" for="tryinput">Type some text to see its tokens</label>
+        <textarea id="tryinput" rows="3" placeholder="Type something here…" autocomplete="off" spellcheck="false"></textarea>
+        <div class="trystatus" id="trystatus" aria-live="polite">
+          <button class="btn-load" id="tryload" type="button">Load the tokeniser to begin</button>
+        </div>
+        <p class="tokens tokens--in" id="tryoutput"></p>
+        <div class="trycount" id="trycount" hidden>
+          <span class="trycount-num" id="trycount-num">0</span>
+          <span class="trycount-lbl">tokens</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 6. aGiTrack ─────────────────────────── -->
+  <section class="section section--agitrack" id="agitrack">
+    <div class="wrap">
+      <div class="agicard">
+        <p class="agi-eyebrow">For the curious and the technical</p>
+        <h2 class="agi-h">Want to see your own token usage?</h2>
+        <p class="agi-body">
+          If you write software with the help of AI, every edit you make is quietly
+          spending tokens too. <strong>aGiTrack</strong> is an open tool that shows you
+          exactly where those tokens go while you code — how much each change cost, and
+          how it adds up over a project.
+        </p>
+        <p class="agi-link">
+          <a class="btn-primary" href="https://agitrack.core-aix.org" target="_blank" rel="noopener noreferrer">
+            Visit aGiTrack
+            <span class="ext" aria-hidden="true">↗</span>
+          </a>
+        </p>
+        <p class="agi-url">agitrack.core-aix.org</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <h2 class="foot-h">About these numbers</h2>
+    <ul class="foot-list">
+      <li>
+        Every question on this page was really sent to <strong>Claude Haiku&nbsp;4.5</strong>,
+        and every answer shown is the genuine reply, unedited.
+      </li>
+      <li>
+        Costs use that model's published rates: <strong>$1.00</strong> per million tokens
+        read and <strong>$5.00</strong> per million tokens written. Pounds are converted at
+        approximately <strong>£1&nbsp;=&nbsp;$1.27</strong>.
+      </li>
+      <li>
+        Tokens are counted with a widely used open tokeniser. Every AI model chops text
+        up slightly differently; on the examples here this count came within about
+        <strong>3%</strong> of the model's own. The idea is identical, the totals shift a little.
+      </li>
+      <li>
+        Models also produce hidden <em>thinking</em> tokens before answering, which are
+        charged as well. The figures here count only the words you can actually see, so
+        a real bill would be somewhat higher.
+      </li>
+      <li>
+        Prices and models change quickly. These figures were prepared in
+        <strong><span id="gen-date">2026</span></strong>.
+      </li>
+    </ul>
+    <p class="foot-tail">
+      Built for a public exhibition. Runs entirely in your browser — no data is sent anywhere.
+      <a href="https://agitrack.core-aix.org" target="_blank" rel="noopener noreferrer">aGiTrack</a>
+    </p>
+  </div>
+</footer>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
