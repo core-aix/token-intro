@@ -83,7 +83,7 @@ node build/verify.js                # 4. check the page still works
 ```
 
 `build/verify.js` loads `index.html` in a headless DOM, runs the real page scripts,
-and asserts 62 checks covering the chooser, result panels, chart, scale cards,
+and asserts 69 checks covering the chooser, result panels, chart, scale cards,
 aGiTrack links, accessibility basics, and the exhibition constraints (dark theme, no
 non-Devon place names, standing prose under 120 words, no fade-out gradients on text,
 every single-line sentence actually fitting on one line, and that the word/token counts
@@ -138,6 +138,11 @@ SCRATCH="$PWD" node build/verify.js   # SCRATCH points at the node_modules paren
 - "Try your own words" needs no button: the tokeniser loads as the section approaches,
   the box is pre-filled with an example so it demonstrates itself from a distance, and
   the example is selected on first focus so the first keystroke replaces it.
+- A reload always starts at the top. The "Try it" control is a `<button>` that scrolls
+  the page rather than a link to `#demo`, so no anchor is left in the URL, and
+  `history.scrollRestoration` is set to `manual` so the browser does not restore the
+  previous scroll position either. The skip link keeps its `href` as a no-JS fallback
+  but suppresses the hash and moves focus itself when scripting is available.
 - Respects `prefers-reduced-motion`; works under forced-colours mode.
 
 ---

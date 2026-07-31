@@ -111,13 +111,16 @@ a { color: var(--accent); text-underline-offset: 4px; }
 .lede-line { display: block; white-space: nowrap; }
 
 .hero-cta { margin: clamp(1.8rem, 5vw, 2.8rem) 0 0; }
-.hero-cta a {
+/* A button, not a link: it scrolls the page rather than navigating, so it
+   leaves no #hash behind for a refresh to jump back to. */
+.hero-btn {
   display: inline-block;
+  font-family: inherit;
   font-weight: 700; font-size: clamp(1.15rem, 4vw, 1.5rem);
-  text-decoration: none;
   padding: .8rem 2.2rem; min-height: 64px; line-height: 2;
-  border-radius: 999px;
+  border: 0; border-radius: 999px;
   background: var(--text-primary); color: var(--page);
+  cursor: pointer;
 }
 
 /* ── Sections ─────────────────────────────────────────────────────────── */

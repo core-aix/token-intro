@@ -362,6 +362,37 @@
       .toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
   }
 
+  /* ── 7. scrolling without leaving a #hash behind ─────────────────────── */
+
+  /* A reload should start at the top of the page, which means two things: no
+     anchor in the URL to jump to, and no browser scroll restoration. */
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+  function scrollToDemo() {
+    var target = document.getElementById('demo');
+    if (!target) return;
+    var reduced = window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    target.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+  }
+
+  var heroBtn = document.getElementById('hero-cta');
+  if (heroBtn) heroBtn.addEventListener('click', scrollToDemo);
+
+  /* The skip link keeps its href so it still works without JavaScript, but when
+     JS is available we move focus ourselves and skip the hash. */
+  var skip = document.querySelector('.skip-link');
+  if (skip) {
+    skip.addEventListener('click', function (e) {
+      var target = document.getElementById('demo');
+      if (!target) return;
+      e.preventDefault();
+      target.setAttribute('tabindex', '-1');
+      target.focus({ preventScroll: true });
+      scrollToDemo();
+    });
+  }
+
   /* ── go ──────────────────────────────────────────────────────────────── */
 
   select(0);

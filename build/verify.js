@@ -28,6 +28,12 @@ JSDOM.fromFile(path.join(ROOT, 'index.html'), {
   resources: 'usable',
   pretendToBeVisual: true,
   virtualConsole: vc,
+  // jsdom implements neither of these, so the page's feature guards would skip
+  // the real code paths. Stub them at their browser defaults so the paths run.
+  beforeParse(w) {
+    w.history.scrollRestoration = 'auto';
+    w.Element.prototype.scrollIntoView = function () {};
+  },
 }).then((dom) => new Promise((r) => setTimeout(() => r(dom), 1500)))
   .then((dom) => {
     const d = dom.window.document;
@@ -190,6 +196,25 @@ JSDOM.fromFile(path.join(ROOT, 'index.html'), {
     const imgs = d.querySelectorAll('img');
     check('no images without alt text',
       Array.from(imgs).every((i) => i.hasAttribute('alt')));
+
+    console.log('\n— Reload returns to the top —');
+    const heroBtn = d.getElementById('hero-cta');
+    check('hero CTA is a button, not a link', heroBtn && heroBtn.tagName === 'BUTTON');
+    check('hero CTA has no href', heroBtn && !heroBtn.hasAttribute('href'));
+    check('browser scroll restoration disabled',
+      dom.window.history.scrollRestoration === 'manual',
+      'is ' + dom.window.history.scrollRestoration);
+    heroBtn.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true, cancelable: true }));
+    check('clicking hero CTA leaves no #hash',
+      !dom.window.location.hash, 'hash=' + dom.window.location.hash);
+    const skipEv = new dom.window.MouseEvent('click', { bubbles: true, cancelable: true });
+    d.querySelector('.skip-link').dispatchEvent(skipEv);
+    check('skip link keeps href as a no-JS fallback',
+      d.querySelector('.skip-link').getAttribute('href') === '#demo');
+    check('skip link suppresses the hash when JS runs', skipEv.defaultPrevented);
+    check('skip link still moves focus to the demo',
+      d.activeElement && d.activeElement.id === 'demo',
+      'focus on ' + (d.activeElement && (d.activeElement.id || d.activeElement.tagName)));
 
     console.log('\n— Referenced files exist —');
     ['assets/styles.css', 'assets/app.js', 'assets/data.js', 'assets/tokeniser.js']
